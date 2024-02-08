@@ -37,7 +37,7 @@ struct score {
 struct users user1, user2, searchusers;
 struct score score, searchscores;
 char move1 = ' ', move2 = ' ', moveb1 = ' ', moveb2 = ' ';
-int logged1 = 0, logged2 = 0, player = 1, lives1 = 5, lives2 = 5, gamefinished = 0, Menu_Music = 1;
+int logged1 = 0, logged2 = 0, player = 1, lives1 = 5, lives2 = 5, gamefinished = 0, Menu_Music = 1, c41num = 1,c42num=1;
 int round = 1, b1 = 0, b2 = 0, score1 = 0, score2 = 0, wins1 = 0, wins2 = 0, c41 = 0, c42 = 0;
 int heart = 1, double_bullet_p1 = 0, double_bullet_p2 = 0, double_bullet1 = 1, double_bullet2 = 1;
 int  twotir1 = 0, twotir2 = 0, ghost1 = 0; ghost2 = 0, ghost_ = 1, bomb_ = 1, bomb1 = 0, bomb2 = 0;
@@ -1486,7 +1486,7 @@ void printmap() {
 				wprintf(L"\033[92m\u01A1\033[0m");
 			else if (map[y][x] == 'C') {
 				if (c41 == 1 && player1_c4.X == x && player1_c4.Y == y) {
-					if ( seconds1 == 65)
+					if (seconds1 == 65)
 						wprintf(L"\033[34m\u2460\033[0m");
 					else if (57 < seconds1 && seconds1 <= 64)
 						wprintf(L"\033[34m\u2461\033[0m");
@@ -1602,8 +1602,8 @@ void play() {
 	COORD player2_bullet = { -1, -1 };
 	player1_c4.X = -1; 	player1_c4.X = -1;
 	player2_c4.X = -1;	player2_c4.Y = -1;
-	bomb1 = 0; bomb2 = 0; bomb_ = 1; heart = 1; double_bullet1 = 1; double_bullet2 = 1; double_bullet_p1 = 0,twotir1=0,twotir2=0;
-	double_bullet_p2 = 0; ghost_ = 1; ghost1 = 0; ghost2 = 0; c41 = 0; c42 = 0; seconds1 = 0; seconds2 = 0, explode = 0;
+	bomb1 = 0; bomb2 = 0; bomb_ = 1; heart = 1; double_bullet1 = 1; double_bullet2 = 1; double_bullet_p1 = 0, twotir1 = 0, twotir2 = 0;
+	double_bullet_p2 = 0; ghost_ = 1; ghost1 = 0; ghost2 = 0; c41 = 0; c42 = 0; seconds1 = 0; seconds2 = 0, explode = 0, c41num = 1, c42num = 1;
 	//Clean Temp Map
 	memset(tempmap, ' ', sizeof(tempmap));
 	if (round == 1)
@@ -1656,7 +1656,7 @@ void play() {
 		gotoxy(0, 0);
 		wprintf(L"\033[93m%10S \033[34mWins:%d   \033[31m%d\u2665\t\t\t\033[92m  Round %d\033[93m\t\t%10S \033[34mWins:%d \t\033[31m%d\u2665\033[0m\n", user1.username, wins1, lives1, round, user2.username, wins2, lives2);
 		/////////////////
-		
+
 		// Input handling for Player 1
 		if (keyPressed(PLAYER1_UP)) {
 			if (player1_pos.Y != 1 && map[player1_pos.Y - 1][player1_pos.X] != '[' && map[player1_pos.Y - 1][player1_pos.X] != '|') {
@@ -1712,11 +1712,18 @@ void play() {
 					PlaySound(TEXT("c4.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					player1_c4 = player1_pos;
 					c41 = 1; map[player1_c4.Y][player1_c4.X] = 'C';
-					seconds1 = 0;
+					seconds1 = 0; c41num--;
 				}
 			}
 			else if (c42 == 1 && tempmap[player1_pos.Y][player1_pos.X] == 'C') {
-				c42 = 0; c41 = 0; seconds2 = 0; lives1++; PlaySound(TEXT("defused.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				if (c42num == 0) {
+					c42 = -1;
+					tempmap[player2_c4.Y][player2_c4.X] = ' ';
+					player2_c4.X = -1; player2_c4.Y = -1;
+				}
+				else if (c42num == 1)
+					c42 = 0;
+				c41num++; c41 = 0; seconds2 = 0; lives1++; PlaySound(TEXT("defused.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			}
 		}
 
@@ -1776,11 +1783,18 @@ void play() {
 					PlaySound(TEXT("c4.wav"), NULL, SND_FILENAME | SND_ASYNC);
 					player2_c4 = player2_pos;
 					c42 = 1; tempmap[player2_c4.Y][player2_c4.X] = 'C';
-					seconds2 = 0;
+					seconds2 = 0; c42num--;
 				}
 			}
 			else if (c41 == 1 && map[player2_pos.Y][player2_pos.X] == 'C') {
-				c41 = 0; c42 = 0; seconds1 = 0; lives2++; PlaySound(TEXT("defused.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				if (c41num == 0) {
+					c41 = -1;
+					tempmap[player1_c4.Y][player1_c4.X] = ' ';
+					player1_c4.X = -1; player1_c4.Y = -1;
+				}
+				else if (c41num == 1)
+					c41 = 0;
+				c42num++; c42 = 0; seconds1 = 0; lives2++; PlaySound(TEXT("defused.wav"), NULL, SND_FILENAME | SND_ASYNC);
 			}
 		}
 
@@ -1788,6 +1802,7 @@ void play() {
 		//Update-C4
 		if (player1_c4.X != -1) {
 			if (seconds1 >= 65) {
+				Sleep(300);
 				lives2 -= 2; c41 = 1;
 				tempmap[player1_c4.Y][player1_c4.X] = ' ';
 				player1_c4.X = -1; player1_c4.Y = -1;
@@ -1802,6 +1817,7 @@ void play() {
 		}
 		if (player2_c4.X != -1) {
 			if (seconds2 >= 65) {
+				Sleep(300);
 				lives1 -= 2;  c42 = 1;
 				tempmap[player2_c4.Y][player2_c4.X] = ' ';
 				player2_c4.X = -1; player2_c4.Y = -1;
@@ -1971,8 +1987,8 @@ void play() {
 		if (bomb1 == 0) {
 			if (((move1 == 'r' && map[player1_bullet.Y][player1_bullet.X + 1] == '|') ||
 				(move1 == 'l' && map[player1_bullet.Y][player1_bullet.X - 1] == '|') ||
-				(move1 == 'd' && map[player1_bullet.Y-1][player1_bullet.X] == '|')||
-				(move1 == 'u' && map[player1_bullet.Y+1][player1_bullet.X] == '|')) && ghost1 <= 0) {
+				(move1 == 'd' && map[player1_bullet.Y - 1][player1_bullet.X] == '|') ||
+				(move1 == 'u' && map[player1_bullet.Y + 1][player1_bullet.X] == '|')) && ghost1 <= 0) {
 				if (move1 == 'u')
 					move1 = 'd';
 				else if (move1 == 'd')
@@ -2003,156 +2019,156 @@ void play() {
 				}
 			}
 		}
-	    //Mirror & Bullet2
-			if (bomb2 == 0) {
-				if (((move2 == 'r' && map[player2_bullet.Y][player2_bullet.X + 1] == '|') ||
-					(move2 == 'l' && map[player2_bullet.Y][player2_bullet.X - 1] == '|') ||
-					(move2 == 'd' && map[player2_bullet.Y - 1][player2_bullet.X] == '|') ||
-					(move2 == 'u' && map[player2_bullet.Y + 1][player2_bullet.X] == '|')) && ghost2 <= 0) {
-					if (move2 == 'u')
-						move2 = 'd';
-					else if (move2 == 'd')
-						move2 = 'u';
-					else if (move2 == 'r')
-						move2 = 'l';
-					else if (move2 == 'l')
-						move2 = 'r';
-				}
-			}
-			else {
-				if (map[player2_bullet.Y][player2_bullet.X] == '|' && ghost2 <= 0) {
-					PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					b2 = 0; bomb2 = 0;
-					tempmap[player2_bullet.Y][player2_bullet.X] = '#';
-					explode = 1;
-					for (i = -1; i <= 1; i++) {
-						for (j = -1; j <= 1; j++) {
-							if (map[player2_bullet.Y + i][player2_bullet.X + j] == '1')
-								lives1--;
-							if (map[player2_bullet.Y + i][player2_bullet.X + j] == '2')
-								lives2--;
-							if (i != 0 || j != 0)
-								tempmap[player2_bullet.Y + i][player2_bullet.X + j] = 'F';
-						}
-					}
-				}
-			}
-			//Wall
-			if (map[player1_bullet.Y][player1_bullet.X] == '[' && ghost1 <= 0) {
-				if (bomb1 == 0)
-					b1 = 0;
-				else {
-					PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					b1 = 0; bomb1 = 0;
-					explode = 1;
-					for (i = -2; i <= 2; i++) {
-						for (j = -2; j <= 2; j++) {
-							if (map[player1_bullet.Y + i][player1_bullet.X + j] == '1')
-								lives1--;
-							if (map[player1_bullet.Y + i][player1_bullet.X + j] == '2')
-								lives2--;
-							if (i != 0 || j != 0)
-								tempmap[player1_bullet.Y + i][player1_bullet.X + j] = 'F';
-						}
-					}
-				}
-			}
-			if (map[player2_bullet.Y][player2_bullet.X] == '[' && ghost2 <= 0) {
-				if (bomb2 == 0)
-					b2 = 0;
-				else {
-					PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
-					b2 = 0; bomb2 = 0;
-					explode = 1;
-					for (i = -2; i <= 2; i++) {
-						for (j = -2; j <= 2; j++) {
-							if (map[player2_bullet.Y + i][player2_bullet.X + j] == '1')
-								lives1--;
-							if (map[player2_bullet.Y + i][player2_bullet.X + j] == '2')
-								lives2--;
-							if (i != 0 || j != 0)
-								tempmap[player2_bullet.Y + i][player2_bullet.X + j] = 'F';
-						}
-					}
-				}
-			}
-			//Check if Bullet Getting Out of map
-			if (player1_bullet.X == 93 || player1_bullet.Y == 23 || player1_bullet.X == -1 || player1_bullet.Y == 0)
-				b1 = 0;
-			if (player2_bullet.X == 93 || player2_bullet.Y == 23 || player2_bullet.X == -1 || player2_bullet.Y == 0)
-				b2 = 0;
-			//Bullet Hitting Player
-			if (player1_bullet.X == player2_pos.X && player1_bullet.Y == player2_pos.Y) {
-				if (bomb1 == 1)
-					PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
-				else
-					PlaySound(TEXT("hit.wav"), NULL, SND_FILENAME | SND_ASYNC);
-				if (double_bullet_p1 == 0)
-					lives2--;
-				else
-					lives2 -= 2;
-				b1 = 0;
-			}
-			if (player2_bullet.X == player1_pos.X && player2_bullet.Y == player1_pos.Y) {
-				if (bomb2 == 1)
-					PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
-				else
-					PlaySound(TEXT("hit.wav"), NULL, SND_FILENAME | SND_ASYNC);
-				if (double_bullet_p2 == 0)
-					lives1--;
-				else
-					lives1 -= 2;
-				b2 = 0;
-			}
-			if (player1_bullet.X == player1_pos.X && player1_bullet.Y == player1_pos.Y) {
-				if (bomb1 == 1)
-					PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
-				else
-					PlaySound(TEXT("hit.wav"), NULL, SND_FILENAME | SND_ASYNC);
-				if (double_bullet_p1 == 0)
-					lives1--;
-				else
-					lives1 -= 2;
-				b1 = 0;
-			}
-			if (player2_bullet.X == player2_pos.X && player2_bullet.Y == player2_pos.Y) {
-				if (bomb2 == 1)
-					PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
-				else
-					PlaySound(TEXT("hit.wav"), NULL, SND_FILENAME | SND_ASYNC);
-				if (double_bullet_p2 == 0)
-					lives2--;
-				else
-					lives2 -= 2;
-				b2 = 0;
-			}
-			//Bullet Check
-			if (b1 == 0) {
-				player1_bullet.X = -1; player1_bullet.Y = -1;
-			}
-			if (b2 == 0) {
-				player2_bullet.X = -1; player2_bullet.Y = -1;
-			}
-
-			// Draw bullets
-			if (player1_bullet.X <= 92 && player1_bullet.X != -1 && player1_bullet.Y <= 22 && player1_bullet.Y >= 1)
-				map[player1_bullet.Y][player1_bullet.X] = '.';
-			if (player2_bullet.X <= 92 && player2_bullet.X != -1 && player2_bullet.Y <= 22 && player2_bullet.Y >= 1)
-				map[player2_bullet.Y][player2_bullet.X] = '.';
-
-			//Print Map
-			if (explode == 0)
-				printmap();
-			else if (explode == 1) {
-				for (y = 1; y < 23; y++) {
-					for (x = 0; x < 93; x++) {
-						if (tempmap[y][x] == 'F')
-							map[y][x] = 'F';
-					}
-				}
-				printmap();
-				Sleep(500);
-				explode = 0;
+		//Mirror & Bullet2
+		if (bomb2 == 0) {
+			if (((move2 == 'r' && map[player2_bullet.Y][player2_bullet.X + 1] == '|') ||
+				(move2 == 'l' && map[player2_bullet.Y][player2_bullet.X - 1] == '|') ||
+				(move2 == 'd' && map[player2_bullet.Y - 1][player2_bullet.X] == '|') ||
+				(move2 == 'u' && map[player2_bullet.Y + 1][player2_bullet.X] == '|')) && ghost2 <= 0) {
+				if (move2 == 'u')
+					move2 = 'd';
+				else if (move2 == 'd')
+					move2 = 'u';
+				else if (move2 == 'r')
+					move2 = 'l';
+				else if (move2 == 'l')
+					move2 = 'r';
 			}
 		}
+		else {
+			if (map[player2_bullet.Y][player2_bullet.X] == '|' && ghost2 <= 0) {
+				PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				b2 = 0; bomb2 = 0;
+				tempmap[player2_bullet.Y][player2_bullet.X] = '#';
+				explode = 1;
+				for (i = -1; i <= 1; i++) {
+					for (j = -1; j <= 1; j++) {
+						if (map[player2_bullet.Y + i][player2_bullet.X + j] == '1')
+							lives1--;
+						if (map[player2_bullet.Y + i][player2_bullet.X + j] == '2')
+							lives2--;
+						if (i != 0 || j != 0)
+							tempmap[player2_bullet.Y + i][player2_bullet.X + j] = 'F';
+					}
+				}
+			}
+		}
+		//Wall
+		if (map[player1_bullet.Y][player1_bullet.X] == '[' && ghost1 <= 0) {
+			if (bomb1 == 0)
+				b1 = 0;
+			else {
+				PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				b1 = 0; bomb1 = 0;
+				explode = 1;
+				for (i = -2; i <= 2; i++) {
+					for (j = -2; j <= 2; j++) {
+						if (map[player1_bullet.Y + i][player1_bullet.X + j] == '1')
+							lives1--;
+						if (map[player1_bullet.Y + i][player1_bullet.X + j] == '2')
+							lives2--;
+						if (i != 0 || j != 0)
+							tempmap[player1_bullet.Y + i][player1_bullet.X + j] = 'F';
+					}
+				}
+			}
+		}
+		if (map[player2_bullet.Y][player2_bullet.X] == '[' && ghost2 <= 0) {
+			if (bomb2 == 0)
+				b2 = 0;
+			else {
+				PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
+				b2 = 0; bomb2 = 0;
+				explode = 1;
+				for (i = -2; i <= 2; i++) {
+					for (j = -2; j <= 2; j++) {
+						if (map[player2_bullet.Y + i][player2_bullet.X + j] == '1')
+							lives1--;
+						if (map[player2_bullet.Y + i][player2_bullet.X + j] == '2')
+							lives2--;
+						if (i != 0 || j != 0)
+							tempmap[player2_bullet.Y + i][player2_bullet.X + j] = 'F';
+					}
+				}
+			}
+		}
+		//Check if Bullet Getting Out of map
+		if (player1_bullet.X == 93 || player1_bullet.Y == 23 || player1_bullet.X == -1 || player1_bullet.Y == 0)
+			b1 = 0;
+		if (player2_bullet.X == 93 || player2_bullet.Y == 23 || player2_bullet.X == -1 || player2_bullet.Y == 0)
+			b2 = 0;
+		//Bullet Hitting Player
+		if (player1_bullet.X == player2_pos.X && player1_bullet.Y == player2_pos.Y) {
+			if (bomb1 == 1)
+				PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			else
+				PlaySound(TEXT("hit.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			if (double_bullet_p1 == 0)
+				lives2--;
+			else
+				lives2 -= 2;
+			b1 = 0;
+		}
+		if (player2_bullet.X == player1_pos.X && player2_bullet.Y == player1_pos.Y) {
+			if (bomb2 == 1)
+				PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			else
+				PlaySound(TEXT("hit.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			if (double_bullet_p2 == 0)
+				lives1--;
+			else
+				lives1 -= 2;
+			b2 = 0;
+		}
+		if (player1_bullet.X == player1_pos.X && player1_bullet.Y == player1_pos.Y) {
+			if (bomb1 == 1)
+				PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			else
+				PlaySound(TEXT("hit.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			if (double_bullet_p1 == 0)
+				lives1--;
+			else
+				lives1 -= 2;
+			b1 = 0;
+		}
+		if (player2_bullet.X == player2_pos.X && player2_bullet.Y == player2_pos.Y) {
+			if (bomb2 == 1)
+				PlaySound(TEXT("explode.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			else
+				PlaySound(TEXT("hit.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			if (double_bullet_p2 == 0)
+				lives2--;
+			else
+				lives2 -= 2;
+			b2 = 0;
+		}
+		//Bullet Check
+		if (b1 == 0) {
+			player1_bullet.X = -1; player1_bullet.Y = -1;
+		}
+		if (b2 == 0) {
+			player2_bullet.X = -1; player2_bullet.Y = -1;
+		}
+
+		// Draw bullets
+		if (player1_bullet.X <= 92 && player1_bullet.X != -1 && player1_bullet.Y <= 22 && player1_bullet.Y >= 1)
+			map[player1_bullet.Y][player1_bullet.X] = '.';
+		if (player2_bullet.X <= 92 && player2_bullet.X != -1 && player2_bullet.Y <= 22 && player2_bullet.Y >= 1)
+			map[player2_bullet.Y][player2_bullet.X] = '.';
+
+		//Print Map
+		if (explode == 0)
+			printmap();
+		else if (explode == 1) {
+			for (y = 1; y < 23; y++) {
+				for (x = 0; x < 93; x++) {
+					if (tempmap[y][x] == 'F')
+						map[y][x] = 'F';
+				}
+			}
+			printmap();
+			Sleep(500);
+			explode = 0;
+		}
 	}
+}
