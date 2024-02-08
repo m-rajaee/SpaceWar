@@ -1,3 +1,5 @@
+//Developed By Mohammad Amin Rajaee
+
 #include <stdio.h>
 #include <time.h>
 #include <Windows.h>
