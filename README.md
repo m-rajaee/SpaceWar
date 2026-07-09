@@ -1,4 +1,4 @@
-A project developed for the Basic Programming course at Isfahan University of Technology. Developed a simple Space War game using C, applying programming fundamentals and game logic implementation.
+A project developed for the Basic Programming course at Isfahan University of Technology. Developed a Two-player game using C, applying programming fundamentals and game logic implementation.
 
 
 CMD Settings For Best Appearance :
