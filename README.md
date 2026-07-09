@@ -4,6 +4,8 @@ A two-player competitive space battle game developed in **C** and implemented fo
 
 The project features a complete local account system, database management, real-time gameplay mechanics, collision detection, physics-based interactions, and audio effects.
 
+**Warning : Cmd Tab Should be Maximized**
+
 ---
 
 ## Overview
